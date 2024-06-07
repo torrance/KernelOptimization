@@ -136,10 +136,9 @@ void benchmark(auto fn, dim3 blocks, dim3 threads) {
 }
 
 int main() {
-    // benchmark<float>(v1<float>, dim3(128), dim3(128));
-    // benchmark<float>(v2<float>, dim3(128), dim3(128));
-    // benchmark<float>(v3<float>, dim3(128), dim3(128));
+    benchmark<float>(v1<float>, dim3(128), dim3(128));
+    benchmark<float>(v2<float>, dim3(128), dim3(128));
+    benchmark<float>(v3<float>, dim3(128), dim3(128));
     benchmark<float>(v4<float>, dim3(128, 8), dim3(128, 1));
     benchmark<float>(v5<float>, dim3(128, 8), dim3(128, 1));
-    benchmark<float>(v6<float>, dim3(128, 8), dim3(128, 128));
 }

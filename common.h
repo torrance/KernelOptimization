@@ -18,7 +18,7 @@ struct GridSpec {
         return std::make_tuple((lpx - N / 2) * deltalm, (mpx - N / 2) * deltalm);
     }
 
-    __host__ __device__ long size() const { return N * N; }
+    __host__ __device__ size_t size() const { return N * N; }
 };
 
 template <typename T>
@@ -46,7 +46,7 @@ ComplexMatrix2x2<T> conjugate_transpose(const ComplexMatrix2x2<T>& A) {
 
 template <typename T>
 __host__ __device__ inline T ndash(const T l, const T m) {
-    auto r2 = min(l*l + m*m, T(1));
+    T r2 = std::min<T>(l*l + m*m, T(1));
     return r2 / (1 + sqrt(1 - r2));
 }
 
