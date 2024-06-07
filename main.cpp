@@ -36,7 +36,7 @@ void fft() {
     HIPCHECK( hipEventCreate(&start) );
     HIPCHECK( hipEventCreate(&stop) );
 
-    double duration;
+    double duration {};
     for (size_t i {}; i < 100; ++i) {
         HIPCHECK( hipMemcpy(data, rubbish, sizeof(hipfftComplex) * 16000 * 16000, hipMemcpyHostToDevice) );
 
