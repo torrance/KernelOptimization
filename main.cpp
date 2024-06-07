@@ -3,6 +3,9 @@
 #include <random>
 #include <vector>
 
+#include <hip/hip_runtime.h>
+#include <hipfft/hipfft.h>
+
 #include "common.h"
 #include "versions/v0.h"
 #include "versions/v1.h"
@@ -16,6 +19,44 @@
 
 inline void hipcheck(hipError_t res, const char* file, int line) {
     if (res != hipSuccess) throw std::runtime_error("Fatal hipError");
+}
+
+void fft() {
+    hipfftComplex* data;
+    HIPCHECK( hipMalloc(&data, sizeof(hipfftComplex) * 16000 * 16000) );
+
+    hipfftComplex* rubbish;
+    HIPCHECK( hipMallocHost((void**) &rubbish, sizeof(hipfftComplex) * 16000 * 16000) );
+
+    hipfftHandle plan;
+    hipfftPlan2d(&plan, 16000, 16000, HIPFFT_C2C);
+    hipfftSetStream(plan, hipStreamPerThread);
+
+    hipEvent_t start, stop;
+    HIPCHECK( hipEventCreate(&start) );
+    HIPCHECK( hipEventCreate(&stop) );
+
+    double duration;
+    for (size_t i {}; i < 100; ++i) {
+        HIPCHECK( hipMemcpy(data, rubbish, sizeof(hipfftComplex) * 16000 * 16000, hipMemcpyHostToDevice) );
+
+        hipEventRecord(start, hipStreamPerThread);
+        hipfftExecC2C(plan, data, data, HIPFFT_FORWARD);
+        hipEventRecord(stop, hipStreamPerThread);
+
+        hipEventSynchronize(stop);
+
+        float thisduration;
+        hipEventElapsedTime(&thisduration, start, stop);
+        duration += thisduration;
+    }
+
+    std::cout << "FFT elapsed: " << duration / 100 << std::endl;
+
+    hipEventDestroy(start);
+    hipEventDestroy(stop);
+    hipfftDestroy(plan);
+    HIPCHECK( hipFree(data) );
 }
 
 template <typename T>
@@ -136,6 +177,7 @@ void benchmark(auto fn, dim3 blocks, dim3 threads) {
 }
 
 int main() {
+    fft();
     benchmark<float>(v1<float>, dim3(128), dim3(128));
     benchmark<float>(v2<float>, dim3(128), dim3(128));
     benchmark<float>(v3<float>, dim3(128), dim3(128));
