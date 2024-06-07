@@ -7,6 +7,7 @@
 #include <hipfft/hipfft.h>
 
 #include "common.h"
+#include "simplekernel.h"
 #include "versions/v0.h"
 #include "versions/v1.h"
 #include "versions/v2.h"
@@ -15,18 +16,12 @@
 #include "versions/v5.h"
 #include "versions/v6.h"
 
-#define HIPCHECK(res) { hipcheck(res, __FILE__, __LINE__); }
-
-inline void hipcheck(hipError_t res, const char* file, int line) {
-    if (res != hipSuccess) throw std::runtime_error("Fatal hipError");
-}
-
 void fft() {
     hipfftComplex* data;
     HIPCHECK( hipMalloc(&data, sizeof(hipfftComplex) * 16000 * 16000) );
 
     hipfftComplex* rubbish;
-    HIPCHECK( hipMallocHost((void**) &rubbish, sizeof(hipfftComplex) * 16000 * 16000) );
+    HIPCHECK( hipHostMalloc((void**) &rubbish, sizeof(hipfftComplex) * 16000 * 16000) );
 
     hipfftHandle plan;
     hipfftPlan2d(&plan, 16000, 16000, HIPFFT_C2C);
@@ -177,10 +172,12 @@ void benchmark(auto fn, dim3 blocks, dim3 threads) {
 }
 
 int main() {
-    fft();
-    benchmark<float>(v1<float>, dim3(128), dim3(128));
-    benchmark<float>(v2<float>, dim3(128), dim3(128));
-    benchmark<float>(v3<float>, dim3(128), dim3(128));
-    benchmark<float>(v4<float>, dim3(128, 8), dim3(128, 1));
-    benchmark<float>(v5<float>, dim3(128, 8), dim3(128, 1));
+    // fft();
+    simplekernel();
+
+    // benchmark<float>(v1<float>, dim3(128), dim3(128));
+    // benchmark<float>(v2<float>, dim3(128), dim3(128));
+    // benchmark<float>(v3<float>, dim3(128), dim3(128));
+    // benchmark<float>(v4<float>, dim3(128, 8), dim3(128, 1));
+    // benchmark<float>(v5<float>, dim3(128, 8), dim3(128, 1));
 }

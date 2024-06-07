@@ -6,6 +6,12 @@
 #include <hip/hip_runtime.h>
 #include <thrust/complex.h>
 
+#define HIPCHECK(res) { hipcheck(res, __FILE__, __LINE__); }
+
+inline void hipcheck(hipError_t res, const char* file, int line) {
+    if (res != hipSuccess) throw std::runtime_error("Fatal hipError");
+}
+
 template <typename T>
 struct GridSpec {
     long N;
